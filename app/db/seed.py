@@ -2,6 +2,7 @@ from app.models.customer import Customer
 from app.models import Base
 from app.db.engine import engine, SessionLocal
 from app.models.product import Product
+from sqlalchemy import text
 
 def seed_default_customer():
     print("Creating tables if they don't exist...")
@@ -15,6 +16,9 @@ def seed_default_customer():
         walk_in = Customer(id = "1",name="Walk-In", email="walkin@gmail.com")
         session.add(walk_in)
         session.commit()
+    else:
+        print("Walk-in Customer already exists.")
+
     session.close()
 
 if __name__ == "__main__":
@@ -47,6 +51,8 @@ def seed_default_product():
         )
         session.add(product)
         session.commit()
+    else:
+        print("Product coca-cola already exists.")
     
     session.close()
 
@@ -54,7 +60,7 @@ def show_tables():
    
     print("Showing tables in the database:")
     session = SessionLocal()
-    tables = session.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()
+    tables = session.execute(text("SELECT name FROM sqlite_master WHERE type='table';")).fetchall()
     for table in tables:
         print(table[0])
 
