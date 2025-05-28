@@ -3,9 +3,7 @@ from sqlalchemy import (
     CheckConstraint, PrimaryKeyConstraint, UniqueConstraint, Index
 )
 from sqlalchemy.orm import declarative_base
-
-Base = declarative_base()
-
+from . import Base
 
 class Customer(Base):
     __tablename__ = 'customers'

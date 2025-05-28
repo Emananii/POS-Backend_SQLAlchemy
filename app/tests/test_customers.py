@@ -1,5 +1,6 @@
 from app.db.engine import SessionLocal, engine
-from app.models.customer import Customer, Base
+from app.models.customer import Customer
+from app.models import Base
 
 Base.metadata.create_all(engine)
 
