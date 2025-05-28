@@ -1,0 +1,4 @@
+SQLAlchemy==1.4.47
+alembic
+click
+pytest
