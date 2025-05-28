@@ -1,9 +1,13 @@
 from datetime import datetime
 from sqlalchemy.orm import Session
-from models import Product, Customer, Sale, SaleItem
-from database import Session as DBSession
+from app.models.product import Product
+from app.models.customer import Customer
+from app.models.sale import Sale
+from app.models.sale_item import SaleItem  # if you have this model
+from app.db.engine import SessionLocal as DBSession
 
-class Cart:
+
+class Sales:
     def __init__(self):
         self.items = []
 

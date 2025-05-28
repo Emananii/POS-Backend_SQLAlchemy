@@ -3,7 +3,7 @@ from sqlalchemy import (
     ForeignKey, CheckConstraint, PrimaryKeyConstraint, Index
 )
 from sqlalchemy.orm import relationship
-from app.models.customer import Base
+from app.models import Base
 from datetime import datetime
 
 class Sale(Base):
