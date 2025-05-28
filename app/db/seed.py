@@ -3,6 +3,7 @@ from app.models import Base
 from app.db.engine import engine, SessionLocal
 from app.models.product import Product
 from sqlalchemy import text
+from app.models.category import Category
 
 def seed_default_customer():
     print("Creating tables if they don't exist...")
@@ -70,3 +71,20 @@ if __name__ == "__main__":
     seed_default_product()
     show_tables()
     print("Seeding complete.")
+
+
+def seed_default_categories():
+    session = SessionLocal()
+    
+    
+    categories = ["Beverages", "Grocery", "Snacks", "Frozen Foods", "Dairy"]
+    for category_name in categories:
+        category = session.query(Category).filter_by(name=category_name).first()
+        if not category:
+            print(f"Adding category: {category_name}")
+            category = Category(name=category_name)
+            session.add(category)
+    
+    session.commit()
+    
+    session.close()

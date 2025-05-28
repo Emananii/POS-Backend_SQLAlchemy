@@ -1,6 +1,8 @@
 # app/models/product.py
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from . import Base
+from app.models.category import Category
+from sqlalchemy.orm import relationship
 
 class Product(Base):
     __tablename__ = 'products'
@@ -13,8 +15,10 @@ class Product(Base):
     stock = Column(Integer, default=0)
     image = Column(String)
     barcode = Column(String, unique=True)
-    category = Column(String)
+    category_id = Column(Integer, ForeignKey('categories.id'))
     unit = Column(String)
 
+    category = relationship("Category", back_populates="products")
+                            
     def __repr__(self):
         return f"<Product(name={self.name}, price={self.selling_price}, stock={self.stock})>"
