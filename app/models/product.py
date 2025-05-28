@@ -1,4 +1,3 @@
-# app/models/product.py
 from sqlalchemy import Column, Integer, String, Float
 from . import Base
 
