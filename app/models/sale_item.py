@@ -15,6 +15,7 @@ class SaleItem(Base):
     quantity = Column(Integer, nullable=False)
     price_at_sale = Column(Integer, nullable=False)
 
+
     #Will uncomment these when Sale and Product models are defined
     #sale = relationship("Sale", back_populates="items")
     #product = relationship("Product")
