@@ -13,7 +13,7 @@ def seed_default_customer():
     walk_in = session.query(Customer).filter_by(name="Walk-In").first()
     if not walk_in:
         print("Walk-In customer not found, adding it...")
-        walk_in = Customer(id = "1",name="Walk-In", email="walkin@gmail.com")
+        walk_in = Customer(id="1", name="Walk-In", email="walkin@gmail.com")
         session.add(walk_in)
         session.commit()
     else:
