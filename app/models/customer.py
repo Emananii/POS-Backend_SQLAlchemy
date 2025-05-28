@@ -4,7 +4,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import declarative_base
 
-from models import Base
+Base = declarative_base()
 
 
 class Customer(Base):
@@ -23,5 +23,10 @@ class Customer(Base):
     email = Column(String(100), nullable=False, unique=True)
     phone = Column(String(15), nullable=True)
 
+    customer_type = Column(String(50), default='individual')  # or 'business'
+    company_name = Column(String(100), nullable=True)
+    loyalty_points = Column(Integer, default=0)
+    discount_rate = Column(Integer, default=0)  # Percentage discount
+
     def __repr__(self):
-        return f"<Customer(id={self.id}, name='{self.name}', email='{self.email}')>"
+        return f"<Customer id={self.id}, name='{self.name}', email='{self.email}'>"
