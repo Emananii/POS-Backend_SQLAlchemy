@@ -1,4 +1,11 @@
+alembic==1.16.1
+click==8.2.1
+greenlet==3.2.2
+iniconfig==2.1.0
+Mako==1.3.10
+MarkupSafe==3.0.2
+packaging==25.0
+pluggy==1.6.0
+pytest==8.3.5
 SQLAlchemy==1.4.47
-alembic
-click
-pytest
+typing_extensions==4.13.2

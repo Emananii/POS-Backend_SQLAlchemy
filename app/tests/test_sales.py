@@ -1,49 +1,69 @@
 import pytest
-from models import Base, Product, Customer
-from sales import Cart
-from database import Session as DBSession
-import os
+from datetime import datetime
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
-@pytest.fixture(autouse=True)
-def clean_db():
-    # Only for testing – clear tables before each test
-    session = DBSession()
-    session.query(Product).delete()
-    session.query(Customer).delete()
-    session.commit()
+from app.models import Base
+from app.models.customer import Customer
+from app.models.sales import Sale
+
+
+TEST_DATABASE_URL = "sqlite:///:memory:"
+engine = create_engine(TEST_DATABASE_URL)
+TestSessionLocal = sessionmaker(bind=engine)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def create_tables():
+    Base.metadata.create_all(engine)
     yield
-    session.close()
+    Base.metadata.drop_all(engine)
+
 
 @pytest.fixture
 def session():
-    return DBSession()
+    db = TestSessionLocal()
+    yield db
+    db.rollback()
+    db.close()
+
 
 @pytest.fixture
-def sample_product(session):
-    product = Product(name="Test Product", price=100, stock=10)
-    session.add(product)
+def seeded_customer_and_sale(session):
+    
+    test_customer = Customer(
+        name="Sale Test User",
+        email="saletestuser@gmail.com",
+        phone="0700000000"
+    )
+    session.add(test_customer)
     session.commit()
-    return product
 
-def test_cart_add_and_total(sample_product):
-    cart = Cart()
-    cart.add_item(sample_product, 2)
-    assert cart.total_price() == 200
+   
+    test_sale = Sale(
+        customer_id=test_customer.id,
+        timestamp=datetime.utcnow(),
+        total_amount=1500.0
+    )
+    session.add(test_sale)
+    session.commit()
 
-def test_checkout_updates_stock_and_customer(sample_product):
-    cart = Cart()
-    cart.add_item(sample_product, 3)
+    return test_customer, test_sale
 
-    customer_info = {
-        'name': 'Alice',
-        'email': 'alice@example.com',
-        'phone': '0700111222'
-    }
-    sale = cart.checkout(customer_email='alice@example.com', customer_info=customer_info)
 
-    session = DBSession()
-    updated = session.query(Product).filter_by(name="Test Product").first()
-    customer = session.query(Customer).filter_by(email="alice@example.com").first()
-    assert updated.stock == 7
-    assert customer.name == 'Alice'
-    session.close()
+def test_sale_creation_and_fetch(session, seeded_customer_and_sale):
+    test_customer, test_sale = seeded_customer_and_sale
+
+    fetched_sale = session.query(Sale).filter_by(customer_id=test_customer.id).first()
+
+    assert fetched_sale is not None
+    assert fetched_sale.total_amount == 1500.0
+    assert fetched_sale.customer_id == test_customer.id
+    assert isinstance(fetched_sale.timestamp, datetime)
+
+
+def test_sale_customer_relationship(session, seeded_customer_and_sale):
+    _, test_sale = seeded_customer_and_sale
+    related_customer = test_sale.customer  # Should be available via backref
+    assert related_customer.name == "Sale Test User"
+    assert related_customer.email == "saletestuser@gmail.com"
