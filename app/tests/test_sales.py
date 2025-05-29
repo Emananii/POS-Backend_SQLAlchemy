@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.models import Base
 from app.models.customer import Customer
-from app.models.sales import Sale
+from app.models.sale import Sale
 
 TEST_DATABASE_URL = "sqlite:///:memory:"
 engine = create_engine(TEST_DATABASE_URL)

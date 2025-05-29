@@ -4,7 +4,7 @@ from app.db.engine import engine, SessionLocal
 from app.models import Base
 from app.models.customer import Customer
 from app.models.product import Product
-from app.models.sales import Sale
+from app.models.sale import Sale
 
 def seed_default_customer():
     session = SessionLocal()
