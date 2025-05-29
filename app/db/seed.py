@@ -4,7 +4,8 @@ from app.db.engine import engine, SessionLocal
 from app.models import Base
 from app.models.customer import Customer
 from app.models.product import Product
-from app.models.sale import Sale
+from sqlalchemy import text
+from app.models.category import Category
 
 def seed_default_customer():
     session = SessionLocal()
@@ -67,3 +68,20 @@ if __name__ == "__main__":
     seed_sales()
     show_tables()
     print("Seeding complete.")
+
+
+def seed_default_categories():
+    session = SessionLocal()
+    
+    
+    categories = ["Beverages", "Grocery", "Snacks", "Frozen Foods", "Dairy"]
+    for category_name in categories:
+        category = session.query(Category).filter_by(name=category_name).first()
+        if not category:
+            print(f"Adding category: {category_name}")
+            category = Category(name=category_name)
+            session.add(category)
+    
+    session.commit()
+    
+    session.close()
