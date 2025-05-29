@@ -2,7 +2,7 @@ from sqlalchemy import (
     Column, String, Integer,
     CheckConstraint, PrimaryKeyConstraint, UniqueConstraint, Index
 )
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import relationship
 from . import Base
 
 class Customer(Base):
@@ -15,7 +15,6 @@ class Customer(Base):
         Index('idx_customer_name', 'name'),
         Index('idx_customer_email', 'email')
     )
-
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(100), nullable=False)
     email = Column(String(100), nullable=False, unique=True)
@@ -25,6 +24,8 @@ class Customer(Base):
     company_name = Column(String(100), nullable=True)
     loyalty_points = Column(Integer, default=0)
     discount_rate = Column(Integer, default=0)  # Percentage discount
+
+    sales = relationship("Sale", back_populates="customer", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Customer id={self.id}, name='{self.name}', email='{self.email}'>"
