@@ -5,6 +5,8 @@ from app.models import Base
 from app.models.customer import Customer
 from app.models.product import Product
 from app.models.category import Category
+from app.models.sale import Sale
+from app.models.sale_item import SaleItem
 from sqlalchemy import text
 
 def seed_default_customer():
@@ -86,10 +88,67 @@ def show_tables():
         print(table[0])
     session.close()
 
+def seed_sales_and_sale_items():
+    session = SessionLocal()
+
+    # Fetch Walk-In customer
+    walk_in_customer = session.query(Customer).filter_by(name="Walk-In").first()
+    if not walk_in_customer:
+        print("Walk-In customer not found! Cannot seed sales.")
+        session.close()
+        return
+
+    # Fetch product
+    product = session.query(Product).filter_by(name="Coca-Cola").first()
+    if not product:
+        print("Product 'Coca-Cola' not found! Cannot seed sales.")
+        session.close()
+        return
+
+    # Check if a similar sale already exists to prevent duplicates
+    existing_sale = (
+        session.query(Sale)
+        .filter_by(customer_id=walk_in_customer.id, total_amount=product.selling_price)
+        .join(Sale.items)
+        .filter(SaleItem.product_id == product.id)
+        .first()
+    )
+
+    if existing_sale:
+        print("A similar sale already exists. Skipping seeding this sale.")
+        session.close()
+        return
+
+    # Create Sale
+    sale = Sale(
+        customer_id=walk_in_customer.id,
+        total_amount=product.selling_price  # Assuming 1 quantity for simplicity
+    )
+    session.add(sale)
+    session.flush()  # Get generated ID
+
+    # Create SaleItem
+    sale_item = SaleItem(
+        sale_id=sale.id,
+        product_id=product.id,
+        name=product.name,
+        quantity=1,
+        price_at_sale=product.selling_price
+    )
+    session.add(sale_item)
+
+    # Commit changes
+    session.commit()
+    print(f"Seeded 1 sale with 1 item for customer '{walk_in_customer.name}'")
+
+    session.close()
+
+
 
 if __name__ == "__main__":
     seed_default_categories()  
     seed_default_product()     
     seed_default_customer()  
-    show_tables()              
+    show_tables()      
+    seed_sales_and_sale_items()       
     print("Seeding complete.")
