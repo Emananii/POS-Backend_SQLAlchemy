@@ -45,6 +45,28 @@ def run_tests():
     print("\n=== Final Customers List ===")
     for customer in get_all_customers():
         print(customer)
+def quick_test():
+    # Create a customer
+    customer = create_customer(name="Jane Doe", email="jane@example.com", phone="1234567890")
+    print("Created Customer:", customer)
+
+    # Create a sale for that customer
+    sale = create_sale(customer.id, [
+        {"product_id": 1, "name": "Bread", "quantity": 1, "price_at_sale": 20},
+        {"product_id": 2, "name": "Butter", "quantity": 2, "price_at_sale": 15}
+    ])
+    print("Created Sale:", sale)
+
+    # Fetch purchases by customer
+    purchases = get_purchases_by_customer(customer.id)
+    if purchases:
+        print(f"Purchases for Customer {customer.name}:")
+        for sale in purchases:
+            print(f"Sale ID: {sale.id}, Total: {sale.total_amount}, Date: {sale.timestamp}")
+            for item in sale.items:
+                print(f" - {item.name}, Qty: {item.quantity}, Price: {item.price_at_sale}")
+    else:
+        print("No purchases found or customer does not exist.")
 
 
 if __name__ == "__main__":
