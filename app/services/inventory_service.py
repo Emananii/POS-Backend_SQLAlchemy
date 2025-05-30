@@ -110,3 +110,12 @@ def update_category(db, category_id, name=None, description=None):
     db.commit()
     db.refresh(category)
     return category
+
+def delete_product(db, product_id):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise ValueError("Product not found")
+    
+    db.delete(product)
+    db.commit()
+    return product

@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.models import Base
 from app.models.product import Product
-from app.models.category import Category  # Import Category
+from app.models.category import Category 
 
 TEST_DATABASE_URL = "sqlite:///:memory:"
 engine = create_engine(TEST_DATABASE_URL)
@@ -32,7 +32,7 @@ def seed_default_product_for_test(session):
             stock=50,
             image="https://images.unsplash.com/photo-1622708862830-a026e3ef60bd?q=80&w=2564&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
             barcode="5449000000996",
-            category=category,  # Assign Category object here, not string
+            category=category,  
             unit="ml"
         )
         session.add(product)
