@@ -1,7 +1,7 @@
 import pytest
 from app.db.seed import seed_default_categories
 from app.db.engine import SessionLocal, engine
-from app.models import Base  # Import Base to create all tables
+from app.models import Base  
 from app.models.category import Category
 
 def test_seed_categories():
