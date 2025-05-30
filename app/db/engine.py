@@ -12,4 +12,4 @@ DATABASE_URL = "sqlite:///pos.db"
 engine = create_engine(DATABASE_URL, echo=True)
 SessionLocal = sessionmaker(bind=engine)
 
-
+session = SessionLocal()
