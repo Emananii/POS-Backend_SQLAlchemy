@@ -18,6 +18,22 @@ class Product(Base):
     unit = Column(String)
 
     category = relationship("Category", back_populates="products")
-                            
+    sale_items = relationship("SaleItem", back_populates="product")
+
     def __repr__(self):
         return f"<Product(name={self.name}, price={self.selling_price}, stock={self.stock})>"
+
+    def to_dict(self):
+        # Return category name or None if no category linked
+        return {
+            "id": self.id,
+            "name": self.name,
+            "brand": self.brand,
+            "purchase_price": self.purchase_price,
+            "selling_price": self.selling_price,
+            "stock": self.stock,
+            "image": self.image,
+            "barcode": self.barcode,
+            "category": self.category.name if self.category else None,
+            "unit": self.unit
+        }
