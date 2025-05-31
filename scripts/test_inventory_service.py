@@ -16,7 +16,6 @@ from app.services.inventory_service import (
 )
 import uuid
 
-
 @pytest.fixture(scope="function")
 def db_session():
     """Create a new database session for testing."""

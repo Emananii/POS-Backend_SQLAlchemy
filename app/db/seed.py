@@ -146,6 +146,8 @@ def seed_sales_and_sale_items():
 
 
 if __name__ == "__main__":
+    print("Creating tables if they don't exist...")
+    Base.metadata.create_all(engine)
     seed_default_categories()  
     seed_default_product()     
     seed_default_customer()  
