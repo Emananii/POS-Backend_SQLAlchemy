@@ -136,3 +136,4 @@ def get_sales_summary_by_customer(start_date=None, end_date=None):
         }
         for row in results
     ]
+
