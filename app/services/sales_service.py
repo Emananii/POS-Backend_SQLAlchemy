@@ -98,3 +98,41 @@ def get_sales_summary_by_day(start_date=None, end_date=None):
         }
         for row in results
     ]
+
+def get_sales_summary_by_customer(start_date=None, end_date=None):
+    """
+    Returns a summary of total sales per customer.
+    Optionally filter by date range.
+    Each item contains {"customer_id": int, "customer_name": str, "total": float}
+    """
+
+    from ..models.customer import Customer  # ensure circular import is avoided
+
+    query = session.query(
+        Customer.id.label("customer_id"),
+        Customer.name.label("customer_name"),
+        func.sum(Sale.total_amount).label("total")
+    ).join(Sale, Sale.customer_id == Customer.id)
+
+    if start_date:
+        if isinstance(start_date, str):
+            start_date = datetime.fromisoformat(start_date)
+        query = query.filter(Sale.timestamp >= start_date)
+
+    if end_date:
+        if isinstance(end_date, str):
+            end_date = datetime.fromisoformat(end_date)
+        query = query.filter(Sale.timestamp <= end_date)
+
+    query = query.group_by(Customer.id, Customer.name).order_by(func.sum(Sale.total_amount).desc())
+
+    results = query.all()
+
+    return [
+        {
+            "customer_id": row.customer_id,
+            "customer_name": row.customer_name,
+            "total_sales": row.total
+        }
+        for row in results
+    ]
