@@ -98,11 +98,7 @@ def get_sales_summary_by_day(start_date=None, end_date=None):
         }
         for row in results
     ]
-<<<<<<< HEAD
-
-=======
     
->>>>>>> CU-86998d9n8_Create-the-CLI_James-Muchai
 def get_sales_summary_by_customer(start_date=None, end_date=None):
     """
     Returns a summary of total sales per customer.
@@ -140,7 +136,3 @@ def get_sales_summary_by_customer(start_date=None, end_date=None):
         }
         for row in results
     ]
-<<<<<<< HEAD
-=======
-
->>>>>>> CU-86998d9n8_Create-the-CLI_James-Muchai
