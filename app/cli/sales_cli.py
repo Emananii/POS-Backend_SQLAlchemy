@@ -1,12 +1,12 @@
 import click
 from datetime import datetime
-from app.services.sale_service import (
+from app.services.sales_service import (
     create_sale,
     get_sale_by_id,
     get_all_sales,
     delete_sale,
-    sales_summary_by_date,
-    sales_summary_by_customer
+    get_sales_summary_by_day,          # ✅ updated import
+    get_sales_summary_by_customer      # ✅ updated import
 )
 
 def parse_date(date_str):
@@ -84,7 +84,7 @@ def handle_summary_by_date():
     try:
         start = parse_date(click.prompt("Start date (YYYY-MM-DD)", default="", show_default=False))
         end = parse_date(click.prompt("End date (YYYY-MM-DD)", default="", show_default=False))
-        summary = sales_summary_by_date(start, end)
+        summary = get_sales_summary_by_day(start, end)
         for row in summary:
             click.echo(f"{row['date']}: Ksh {row['total_sales']}")
     except Exception as e:
@@ -94,7 +94,7 @@ def handle_summary_by_customer():
     try:
         start = parse_date(click.prompt("Start date (YYYY-MM-DD)", default="", show_default=False))
         end = parse_date(click.prompt("End date (YYYY-MM-DD)", default="", show_default=False))
-        summary = sales_summary_by_customer(start, end)
+        summary = get_sales_summary_by_customer(start, end)
         for row in summary:
             click.echo(f"{row['customer_name']}: Ksh {row['total_sales']}")
     except Exception as e:
