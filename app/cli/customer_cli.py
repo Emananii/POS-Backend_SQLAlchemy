@@ -69,19 +69,52 @@ def handle_list():
 
 def handle_view():
     try:
-        choice = click.prompt("Search by", type=click.Choice(["id", "email"]))
-        if choice == "id":
-            id_ = click.prompt("Customer ID", type=int)
+        click.echo("🔍 View Customer Details")
+        click.echo("   You can search by:")
+        click.echo("     1. ID")
+        click.echo("     2. Email")
+
+        # Flexible prompt input mapping
+        valid_inputs = {
+            "1": "id",
+            "id": "id",
+            "2": "email",
+            "email": "email"
+        }
+
+        # Prompt in a loop until valid input is given
+        while True:
+            raw_input = click.prompt("Enter search method (1 for ID, 2 for Email)").strip().lower()
+            search_method = valid_inputs.get(raw_input)
+            if search_method:
+                break
+            click.secho("⚠️ Invalid input. Please type '1', '2', 'id', or 'email'.", fg="yellow")
+
+        # Fetch customer based on method
+        if search_method == "id":
+            id_ = click.prompt("🔢 Enter Customer ID", type=int)
             customer = get_customer_by_id(id_)
         else:
-            email = click.prompt("Customer Email")
+            email = click.prompt("📧 Enter Customer Email").strip()
             customer = get_customer_by_email(email)
+
+        # Display result
         if not customer:
-            click.echo("❌ Customer not found.")
+            click.secho("❌ No customer found with the provided information.", fg="red")
         else:
-            click.echo(f"👤 {customer.name} ({customer.email}) - {customer.customer_type}")
+            click.secho("✅ Customer Found:", fg="green", bold=True)
+            click.echo(f"   👤 Name        : {customer.name}")
+            click.echo(f"   📧 Email       : {customer.email}")
+            click.echo(f"   📱 Phone       : {customer.phone}")
+            click.echo(f"   🏷️ Type        : {customer.customer_type}")
+            if customer.customer_type == "business" and customer.company_name:
+                click.echo(f"   🏢 Company     : {customer.company_name}")
+            click.echo(f"   ⭐ Loyalty Pts : {customer.loyalty_points}")
+            click.echo(f"   💸 Discount    : {customer.discount_rate:.2f}%")
+
     except Exception as e:
-        click.echo(f"❌ Failed to view customer: {e}")
+        click.secho(f"❌ Failed to retrieve customer details: {e}", fg="red")
+
 
 def handle_update():
     try:

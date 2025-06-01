@@ -1,9 +1,9 @@
 import click
-from app.models.product import Product  # Import Product model
-from app.models.category import Category  # Import Category model
+from app.models.category import Category
 from app.services.inventory_service import (
     create_product,
     update_product,
+    purchase_product,
     get_product_by_id,
     get_all_products,
     create_category,
@@ -11,7 +11,9 @@ from app.services.inventory_service import (
     search_products_by_name,
     get_products_by_category,
     get_products_in_stock,
-    delete_product
+    delete_product,
+    get_or_create_category_by_name,  # added this to support category creation by name
+    purchase_product as purchase_stock  # to unify naming in CLI function
 )
 from app.db.engine import SessionLocal
 
@@ -56,7 +58,6 @@ def add_product_cli():
 
 
 def update_product_cli():
-    """Update product details."""
     click.echo("\n--- Update Product ---")
     product_id = click.prompt('Enter product ID to update', type=int)
     db = next(get_db())
@@ -81,8 +82,24 @@ def update_product_cli():
     purchase_price = click.prompt(f'Enter new purchase price (current: {product.purchase_price})', default=product.purchase_price, type=float)
     selling_price = click.prompt(f'Enter new selling price (current: {product.selling_price})', default=product.selling_price, type=float)
     stock = click.prompt(f'Enter new stock quantity (current: {product.stock})', default=product.stock, type=int)
-    barcode = click.prompt(f'Enter new barcode (current: {product.barcode})', default=product.barcode)
-    category_id = click.prompt(f'Enter new category ID (current: {product.category_id})', default=product.category_id, type=int)
+
+    if product.barcode:
+        barcode = click.prompt(f'Enter new barcode (current: {product.barcode})', default=product.barcode)
+    else:
+        barcode = click.prompt('Enter barcode (or leave blank to skip)', default='', show_default=False)
+
+    use_category = click.confirm("Would you like to update or assign a category?")
+    category_id = product.category_id
+    if use_category:
+        category_name = click.prompt('Enter category name (existing or new)')
+        try:
+            category = get_or_create_category_by_name(db, category_name)
+            category_id = category.id
+            click.echo(f"Using category '{category.name}' with ID {category.id}")
+        except Exception as e:
+            click.echo(f"Error handling category: {e}")
+            category_id = None  # fallback if error
+
     unit = click.prompt(f'Enter new unit (current: {product.unit})', default=product.unit)
 
     try:
@@ -94,13 +111,13 @@ def update_product_cli():
             purchase_price=purchase_price,
             selling_price=selling_price,
             stock=stock,
-            barcode=barcode,
+            barcode=barcode if barcode else None,
             category_id=category_id,
             unit=unit
         )
-        click.echo(f"Product '{updated_product.name}' updated successfully.")
+        click.echo(f"✅ Product '{updated_product.name}' updated successfully.")
     except Exception as e:
-        click.echo(f"Error updating product: {e}")
+        click.echo(f"❌ Error updating product: {e}")
 
 
 def list_products():
@@ -115,6 +132,31 @@ def list_products():
                        f"Category ID: {product.category_id}, Barcode: {product.barcode}")
     else:
         click.echo("No products found in the inventory.")
+
+
+def purchase_stock_cli():
+    """Purchase additional stock for an existing product."""
+    click.echo("\n--- Purchase Stock ---")
+    db = next(get_db())
+
+    try:
+        product_id = click.prompt("Enter product ID to restock", type=int)
+        quantity = click.prompt("Enter quantity to purchase", type=int)
+        new_purchase_price = click.prompt("Enter new purchase price per unit", type=float)
+
+        product = get_product_by_id(db, product_id)
+        if not product:
+            click.echo(f"Product with ID {product_id} not found.")
+            return
+
+        updated_product = purchase_stock(db, product_id, quantity, new_purchase_price)
+        click.echo(
+            f"✅ Purchased {quantity} units of '{updated_product.name}'. "
+            f"New stock: {updated_product.stock}, "
+            f"Updated purchase price: ${updated_product.purchase_price:.2f}"
+        )
+    except Exception as e:
+        click.echo(f"❌ Error purchasing stock: {e}")
 
 
 def create_category_cli():
@@ -210,14 +252,15 @@ def inventory_menu():
     click.echo("7. List products by category")
     click.echo("8. View product stock levels")
     click.echo("9. Delete a product")
-    click.echo("10. Exit")
+    click.echo("10. Purchase stock")  # <---- Add this line
+    click.echo("11. Exit")
 
 
 @click.command()
-def main_menu(): 
+def main_menu():
     """Main menu for inventory management."""
     while True:
-        inventory_menu()  
+        inventory_menu()
         try:
             choice = click.prompt("Enter a number", type=int)
         except click.Abort:
@@ -248,6 +291,8 @@ def main_menu():
         elif choice == 9:
             delete_product_cli()
         elif choice == 10:
+            purchase_stock_cli()  # Add purchase stock here
+        elif choice == 11:
             click.echo("Exiting the menu...")
             break
         else:
