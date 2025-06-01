@@ -12,8 +12,8 @@ from app.services.inventory_service import (
     get_products_by_category,
     get_products_in_stock,
     delete_product,
-    get_or_create_category_by_name,  # added this to support category creation by name
-    purchase_product as purchase_stock  # to unify naming in CLI function
+    get_or_create_category_by_name,  
+    purchase_product as purchase_stock  
 )
 from app.db.engine import SessionLocal
 
@@ -98,7 +98,7 @@ def update_product_cli():
             click.echo(f"Using category '{category.name}' with ID {category.id}")
         except Exception as e:
             click.echo(f"Error handling category: {e}")
-            category_id = None  # fallback if error
+            category_id = None  
 
     unit = click.prompt(f'Enter new unit (current: {product.unit})', default=product.unit)
 
@@ -143,17 +143,19 @@ def purchase_stock_cli():
         product_id = click.prompt("Enter product ID to restock", type=int)
         quantity = click.prompt("Enter quantity to purchase", type=int)
         new_purchase_price = click.prompt("Enter new purchase price per unit", type=float)
+        new_selling_price = click.prompt("Enter new selling price per unit", type=float)  
 
         product = get_product_by_id(db, product_id)
         if not product:
             click.echo(f"Product with ID {product_id} not found.")
             return
 
-        updated_product = purchase_stock(db, product_id, quantity, new_purchase_price)
+        updated_product = purchase_stock(db, product_id, new_purchase_price, new_selling_price, quantity)
         click.echo(
             f"✅ Purchased {quantity} units of '{updated_product.name}'. "
             f"New stock: {updated_product.stock}, "
-            f"Updated purchase price: ${updated_product.purchase_price:.2f}"
+            f"Updated purchase price: ${updated_product.purchase_price:.2f}, "
+            f"Updated selling price: ${updated_product.selling_price:.2f}"  
         )
     except Exception as e:
         click.echo(f"❌ Error purchasing stock: {e}")
@@ -230,13 +232,35 @@ def delete_product_cli():
     click.echo("\n--- Delete Product ---")
     product_id = click.prompt('Enter product ID to delete', type=int)
     db = next(get_db())
+
+    
+    from app.models.sale_item import SaleItem
+    from app.models.product import Product  
+    
     try:
-        deleted = delete_product(db, product_id)
-        if deleted:
+    
+        sale_items = db.query(SaleItem).filter(SaleItem.product_id == product_id).all()
+        
+        if sale_items:
+            click.echo(f"Product has {len(sale_items)} linked sale items.")
+            
+            for sale_item in sale_items:
+                db.delete(sale_item)  
+                click.echo(f"Deleted sale item with ID {sale_item.id}.")
+            db.commit()  
+        else:
+            click.echo("No sale items found for this product.")
+        
+        
+        product = db.query(Product).filter(Product.id == product_id).first()  
+        if product:
+            db.delete(product) 
+            db.commit()  
             click.echo(f"Product with ID {product_id} deleted successfully.")
         else:
             click.echo(f"Product with ID {product_id} not found.")
     except Exception as e:
+        db.rollback()  
         click.echo(f"Error deleting product: {e}")
 
 
