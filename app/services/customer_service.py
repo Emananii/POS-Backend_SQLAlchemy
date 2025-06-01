@@ -3,7 +3,6 @@ from app.models.customer import Customer
 from app.models.sale import Sale
 from app.db.engine import SessionLocal
 
-# CREATE
 def create_customer(name, email, phone=None, customer_type="individual", company_name=None, discount_rate=0):
     customer = Customer(
         name=name,
@@ -39,7 +38,10 @@ def get_customer_by_email(email):
         if not customer:
             raise ValueError(f"Customer with email '{email}' not found.")
         return customer
-
+    
+def get_customer_by_name(name):
+    with SessionLocal() as session:
+        return session.query(Customer).filter(Customer.name.ilike(f"%{name}%")).all()
 
 def get_all_customers():
     with SessionLocal() as session:

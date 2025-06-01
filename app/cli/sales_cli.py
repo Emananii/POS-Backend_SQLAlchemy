@@ -1,14 +1,16 @@
 import click
 from datetime import datetime
+
 from app.services.sales_service import (
     create_sale,
     get_sale_by_id,
     get_all_sales,
     delete_sale,
     get_sales_summary_by_day,
-    get_sales_summary_by_customer
+    get_sales_summary_by_customer,
 )
-from app.services.customer_service import get_customer_by_id  # 🆕 New import
+
+from app.services.customer_service import get_customer_by_name 
 
 
 def parse_date(date_str):
@@ -26,7 +28,8 @@ def menu():
     click.echo("4. Delete a sale")
     click.echo("5. Sales summary by date")
     click.echo("6. Sales summary by customer")
-    click.echo("7. Exit")
+    click.echo("7. View sales by customer")
+    click.echo("8. Exit")
     try:
         return click.prompt("\nEnter a number", type=int)
     except click.exceptions.Abort:
@@ -36,7 +39,26 @@ def menu():
 
 def handle_create():
     try:
-        customer_id = click.prompt("Customer ID", type=int)
+        identifier = click.prompt("Enter customer name")
+        matches = get_customer_by_name(identifier)
+
+        if not matches:
+            click.echo("\u274C No customer found with that name.")
+            return
+        elif len(matches) > 1:
+            click.echo("\u26A0 Multiple customers found:")
+            for c in matches:
+                click.echo(f"- ID {c.id}: {c.name}")
+            selected_id = click.prompt("Enter the ID of the customer you meant", type=int)
+            customer = next((c for c in matches if c.id == selected_id), None)
+            if not customer:
+                click.echo("\u274C Invalid selection.")
+                return
+        else:
+            customer = matches[0]
+
+        click.echo(f"\nCreating sale for: {customer.name} (ID {customer.id})\n")
+
         items = []
         while True:
             product_id = click.prompt("Product ID", type=int)
@@ -51,8 +73,10 @@ def handle_create():
             })
             if not click.confirm("Add another product?"):
                 break
-        sale = create_sale(customer_id, items)
+
+        sale = create_sale(customer.id, items)
         click.echo(f"\u2705 Created sale #{sale.id} - Total: Ksh {sale.total_amount}")
+
     except Exception as e:
         click.echo(f"\u274C Failed to create sale: {e}")
 
@@ -122,6 +146,45 @@ def handle_summary_by_customer():
         click.echo(f"\u274C Failed to generate summary: {e}")
 
 
+def handle_customer_sales():
+    try:
+        identifier = click.prompt("Enter customer ID or name")
+        customer = None
+        if identifier.isdigit():
+            customer = get_customer_by_id(int(identifier))
+        else:
+            matches = get_customer_by_name(identifier)
+            if not matches:
+                click.echo("\u274C No customer found with that name.")
+                return
+            elif len(matches) > 1:
+                click.echo("\u26A0 Multiple customers found:")
+                for c in matches:
+                    click.echo(f"- ID {c.id}: {c.name}")
+                selected_id = click.prompt("Enter the ID of the customer you meant", type=int)
+                customer = get_customer_by_id(selected_id)
+            else:
+                customer = matches[0]
+
+        if not customer:
+            click.echo("\u274C Customer not found.")
+            return
+
+        sales = get_sales_by_customer_id(customer.id)
+        if not sales:
+            click.echo(f"No sales found for customer {customer.name}.")
+            return
+
+        click.echo(f"\n\U0001F9FE Sales for {customer.name} (ID {customer.id}):\n")
+        for sale in sales:
+            click.echo(f"- Sale #{sale.id}: {sale.timestamp} - Ksh {sale.total_amount}")
+            for item in sale.items:
+                click.echo(f"  • {item.name}: {item.quantity} x {item.price_at_sale}")
+            click.echo("")  # Empty line between sales
+    except Exception as e:
+        click.echo(f"\u274C Error fetching customer sales: {e}")
+
+
 @click.command()
 def cli():
     while True:
@@ -133,7 +196,8 @@ def cli():
             elif choice == 4: handle_delete()
             elif choice == 5: handle_summary_by_date()
             elif choice == 6: handle_summary_by_customer()
-            elif choice == 7:
+            elif choice == 7: handle_customer_sales()  # ✅ Hooked it into the menu
+            elif choice == 8:
                 click.echo("\U0001F44B Goodbye!")
                 break
             else:

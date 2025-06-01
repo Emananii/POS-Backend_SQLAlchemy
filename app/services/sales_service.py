@@ -5,7 +5,7 @@ from ..models.sale import Sale
 from ..models.sale_item import SaleItem
 from sqlalchemy import func
 
-# CREATE
+
 def create_sale(customer_id, sale_items_data):
     """
     Creates a Sale with associated SaleItems.
@@ -26,7 +26,7 @@ def create_sale(customer_id, sale_items_data):
         )
         sale_items.append(sale_item)
 
-    # Use timezone-aware UTC datetime here
+    
     new_sale = Sale(
         customer_id=customer_id,
         total_amount=total,
@@ -42,9 +42,9 @@ def create_sale(customer_id, sale_items_data):
         session.rollback()
         raise ValueError(f"Failed to create sale: {e}")
 
-# READ
+
 def get_sale_by_id(sale_id):
-    # Use session.get() for primary key lookup (new recommended approach)
+    
     sale = session.get(Sale, sale_id)
     if not sale:
         raise ValueError(f"Sale with ID {sale_id} not found.")
@@ -56,14 +56,13 @@ def get_sales_by_customer(customer_id):
 def get_all_sales():
     return session.query(Sale).order_by(Sale.timestamp.desc()).all()
 
-# DELETE
+
 def delete_sale(sale_id):
     sale = get_sale_by_id(sale_id)
     session.delete(sale)
     session.commit()
     return True
 
-# [Optional] Daily summary (total revenue per day)
 def get_sales_summary_by_day(start_date=None, end_date=None):
     """
     Returns a list of daily sales summaries.
@@ -90,7 +89,6 @@ def get_sales_summary_by_day(start_date=None, end_date=None):
 
     results = query.all()
 
-    # Normalize date format to string ISO
     return [
         {
             "date": row.date.isoformat() if hasattr(row.date, "isoformat") else str(row.date),
@@ -106,7 +104,7 @@ def get_sales_summary_by_customer(start_date=None, end_date=None):
     Each item contains {"customer_id": int, "customer_name": str, "total": float}
     """
 
-    from ..models.customer import Customer  # ensure circular import is avoided
+    from ..models.customer import Customer
 
     query = session.query(
         Customer.id.label("customer_id"),
