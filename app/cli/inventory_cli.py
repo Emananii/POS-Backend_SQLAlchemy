@@ -1,4 +1,6 @@
 import click
+from app.models.product import Product  # Import Product model
+from app.models.category import Category  # Import Category model
 from app.services.inventory_service import (
     create_product,
     update_product,
@@ -12,7 +14,6 @@ from app.services.inventory_service import (
     delete_product
 )
 from app.db.engine import SessionLocal
-
 
 
 def get_db():
@@ -52,7 +53,6 @@ def add_product_cli():
         click.echo(f"Product '{product.name}' added successfully with ID: {product.id}.")
     except Exception as e:
         click.echo(f"Error adding product: {e}")
-
 
 
 def update_product_cli():
@@ -103,7 +103,6 @@ def update_product_cli():
         click.echo(f"Error updating product: {e}")
 
 
-
 def list_products():
     """List all products in the inventory."""
     click.echo("\n--- All Products ---")
@@ -116,6 +115,7 @@ def list_products():
                        f"Category ID: {product.category_id}, Barcode: {product.barcode}")
     else:
         click.echo("No products found in the inventory.")
+
 
 def create_category_cli():
     """Create a new product category."""
@@ -170,6 +170,7 @@ def list_products_by_category(category_id):
     else:
         click.echo(f"No products found for category ID {category_id}.")
 
+
 def view_product_stock_levels():
     """View stock levels for all products."""
     click.echo("\n--- Product Stock Levels ---")
@@ -197,7 +198,6 @@ def delete_product_cli():
         click.echo(f"Error deleting product: {e}")
 
 
-
 def inventory_menu():
     """Displays the main inventory CLI menu options."""
     click.echo("\n🧾 INVENTORY CLI MENU")
@@ -211,7 +211,7 @@ def inventory_menu():
     click.echo("8. View product stock levels")
     click.echo("9. Delete a product")
     click.echo("10. Exit")
-    
+
 
 @click.command()
 def main_menu(): 
