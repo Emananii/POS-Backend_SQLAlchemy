@@ -24,7 +24,7 @@ def create_customer(name, email, phone=None, customer_type="individual", company
 
 
 # READ
-def get_customer_by_id(customer_id):
+def get_customer_by_id(db, customer_id):
     with SessionLocal() as session:
         customer = session.query(Customer).get(customer_id)
         if not customer:
