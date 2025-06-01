@@ -34,7 +34,7 @@ def add_product_cli():
     brand = click.prompt('Enter product brand')
     purchase_price = click.prompt('Enter purchase price', type=float)
     selling_price = click.prompt('Enter selling price', type=float)
-    stock = click.prompt('Enter stock quantity', type=int)
+    stock = click.prompt('Enter opening stock', type=int)
     barcode = click.prompt('Enter barcode')
     category_id = click.prompt('Enter category ID', type=int)
     unit = click.prompt('Enter unit of measurement')
@@ -142,8 +142,8 @@ def purchase_stock_cli():
     try:
         product_id = click.prompt("Enter product ID to restock", type=int)
         quantity = click.prompt("Enter quantity to purchase", type=int)
-        new_purchase_price = click.prompt("Enter new purchase price per unit", type=float)
-        new_selling_price = click.prompt("Enter new selling price per unit", type=float)  
+        new_purchase_price = click.prompt("Enter new purchase price per unit (ksh)", type=float)
+        new_selling_price = click.prompt("Enter new selling price per unit (ksh)", type=float)  
 
         product = get_product_by_id(db, product_id)
         if not product:
@@ -154,8 +154,8 @@ def purchase_stock_cli():
         click.echo(
             f"✅ Purchased {quantity} units of '{updated_product.name}'. "
             f"New stock: {updated_product.stock}, "
-            f"Updated purchase price: ${updated_product.purchase_price:.2f}, "
-            f"Updated selling price: ${updated_product.selling_price:.2f}"  
+            f"Updated purchase price: ksh{updated_product.purchase_price:.2f}, "
+            f"Updated selling price: ksh{updated_product.selling_price:.2f}"  
         )
     except Exception as e:
         click.echo(f"❌ Error purchasing stock: {e}")
