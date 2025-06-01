@@ -9,7 +9,7 @@ from app.models.category import Category
 
 DATABASE_URL = "sqlite:///pos.db"
 
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL, echo=False)
 
 SessionLocal = sessionmaker(bind=engine)
 

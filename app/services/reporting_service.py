@@ -48,6 +48,7 @@ def total_sales_per_customer(start_date=None, end_date=None):
     ]
 
 def top_customers_by_sales(limit=5, start_date=None, end_date=None):
+    
     start_date = _normalize_date(start_date)
     end_date = _normalize_date(end_date)
 

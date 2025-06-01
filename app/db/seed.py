@@ -1,4 +1,5 @@
 from datetime import datetime
+import random
 from sqlalchemy import text
 from app.db.engine import engine, SessionLocal
 from app.models import Base
@@ -7,150 +8,124 @@ from app.models.product import Product
 from app.models.category import Category
 from app.models.sale import Sale
 from app.models.sale_item import SaleItem
-from sqlalchemy import text
 
-def seed_default_customer():
-    print("Creating tables if they don't exist...")
+# Categories
+CATEGORY_NAMES = ["Beverages", "Grocery", "Snacks", "Frozen Foods", "Dairy"]
 
-    Base.metadata.create_all(engine)
+# Sample data
+CUSTOMERS = [
+    {"name": "Walk-In", "email": "walkin@gmail.com"},
+    {"name": "Alice", "email": "alice@example.com"},
+    {"name": "Bob", "email": "bob@example.com"},
+    {"name": "Charlie", "email": "charlie@example.com"},
+    {"name": "David", "email": "david@example.com"},
+    {"name": "Eva", "email": "eva@example.com"},
+    {"name": "Frank", "email": "frank@example.com"},
+    {"name": "Grace", "email": "grace@example.com"},
+    {"name": "Hannah", "email": "hannah@example.com"},
+    {"name": "Isaac", "email": "isaac@example.com"},
+]
 
-    session = SessionLocal()
-    print("Checking if 'Walk-In' customer exists...")
-    walk_in = session.query(Customer).filter_by(name="Walk-In").first()
-    if not walk_in:
-        print("Walk-In customer not found, adding it...")
-        walk_in = Customer(name="Walk-In", email="walkin@gmail.com")
-        session.add(walk_in)
-        session.commit()
-    else:
-        print("Walk-in Customer already exists.")
-    
-    session.close()
+PRODUCTS = [
+    # Beverages
+    {"name": "Coca-Cola", "brand": "Coca-Cola", "price": 120, "category": "Beverages"},
+    {"name": "Pepsi", "brand": "PepsiCo", "price": 115, "category": "Beverages"},
+    # Grocery
+    {"name": "Maize Flour", "brand": "Unga", "price": 250, "category": "Grocery"},
+    {"name": "Rice", "brand": "Sunrice", "price": 300, "category": "Grocery"},
+    # Snacks
+    {"name": "Potato Chips", "brand": "Lays", "price": 80, "category": "Snacks"},
+    {"name": "Cookies", "brand": "Oreo", "price": 100, "category": "Snacks"},
+    # Frozen Foods
+    {"name": "Frozen Chicken", "brand": "FarmFresh", "price": 600, "category": "Frozen Foods"},
+    {"name": "Fish Fingers", "brand": "SeaFresh", "price": 550, "category": "Frozen Foods"},
+    # Dairy
+    {"name": "Milk", "brand": "Brookside", "price": 60, "category": "Dairy"},
+    {"name": "Cheese", "brand": "HappyCow", "price": 200, "category": "Dairy"},
+]
 
-def seed_default_categories():
-    session = SessionLocal()
-    categories = ["Beverages", "Grocery", "Snacks", "Frozen Foods", "Dairy"]
-    
-    for category_name in categories:
-        category = session.query(Category).filter_by(name=category_name).first()
-        if not category:
-            print(f"Adding category: {category_name}")
-            category = Category(name=category_name)
-            session.add(category)
-    
+def seed_categories(session):
+    print("Seeding categories...")
+    for name in CATEGORY_NAMES:
+        if not session.query(Category).filter_by(name=name).first():
+            session.add(Category(name=name))
     session.commit()
-    session.close()
 
-def seed_default_product():
-    print("Creating tables if they don't exist...")
+def seed_customers(session):
+    print("Seeding customers...")
+    for customer in CUSTOMERS:
+        if not session.query(Customer).filter_by(email=customer["email"]).first():
+            session.add(Customer(name=customer["name"], email=customer["email"]))
+    session.commit()
 
-  
-    Base.metadata.create_all(engine)
+def seed_products(session):
+    print("Seeding products...")
+    for p in PRODUCTS:
+        category = session.query(Category).filter_by(name=p["category"]).first()
+        if not category:
+            continue
 
-    session = SessionLocal()
-   
-    category = session.query(Category).filter_by(name="Beverages").first()
-    if not category:
-        print("Category 'Beverages' not found! Please seed categories first.")
-    else:
-        print("Category 'Beverages' found, proceeding to add product.")
+        if not session.query(Product).filter_by(name=p["name"]).first():
+            product = Product(
+                name=p["name"],
+                brand=p["brand"],
+                purchase_price=p["price"] - 10,
+                selling_price=p["price"],
+                stock=random.randint(30, 100),
+                image="https://source.unsplash.com/300x300/?product",
+                barcode=str(random.randint(1000000000000, 9999999999999)),
+                category_id=category.id,
+                unit="pcs"
+            )
+            session.add(product)
+    session.commit()
 
+def seed_sales_and_items(session, num_sales=10):
+    print(f"Seeding {num_sales} sales with sale items...")
+    customers = session.query(Customer).all()
+    products = session.query(Product).all()
 
-    product = session.query(Product).filter_by(name="Coca-Cola").first()
-    if not product:
-        print("Product Coca-Cola not found, adding it...")
+    for _ in range(num_sales):
+        customer = random.choice(customers)
+        selected_products = random.sample(products, k=random.randint(1, 3))
 
-        
-        product = Product(
-            name="Coca-Cola",
-            brand="Coca-Cola",
-            purchase_price=108,
-            selling_price=120,
-            stock=50,
-            image="https://images.unsplash.com/photo-1622708862830-a026e3ef60bd?q=80&w=2564&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-            barcode="5449000000996",
-            category_id=category.id,  
-            unit="ml"
-        )
-        session.add(product)
-        session.commit()
-    else:
-        print("Product Coca-Cola already exists.")
-    
-    session.close()
+        total = sum(p.selling_price for p in selected_products)
+        sale = Sale(customer_id=customer.id, total_amount=total)
+        session.add(sale)
+        session.flush()
 
+        for product in selected_products:
+            quantity = random.randint(1, 3)
+            sale_item = SaleItem(
+                sale_id=sale.id,
+                product_id=product.id,
+                name=product.name,
+                quantity=quantity,
+                price_at_sale=product.selling_price
+            )
+            session.add(sale_item)
+    session.commit()
 
 def show_tables():
-    print("Showing tables in the database:")
+    print("Current tables:")
     session = SessionLocal()
     tables = session.execute(text("SELECT name FROM sqlite_master WHERE type='table';")).fetchall()
     for table in tables:
-        print(table[0])
+        print("-", table[0])
     session.close()
 
-def seed_sales_and_sale_items():
+def run_seed():
+    print("Creating all tables...")
+    Base.metadata.create_all(engine)
+
     session = SessionLocal()
-
-    # Fetch Walk-In customer
-    walk_in_customer = session.query(Customer).filter_by(name="Walk-In").first()
-    if not walk_in_customer:
-        print("Walk-In customer not found! Cannot seed sales.")
-        session.close()
-        return
-
-    # Fetch product
-    product = session.query(Product).filter_by(name="Coca-Cola").first()
-    if not product:
-        print("Product 'Coca-Cola' not found! Cannot seed sales.")
-        session.close()
-        return
-
-    # Check if a similar sale already exists to prevent duplicates
-    existing_sale = (
-        session.query(Sale)
-        .filter_by(customer_id=walk_in_customer.id, total_amount=product.selling_price)
-        .join(Sale.items)
-        .filter(SaleItem.product_id == product.id)
-        .first()
-    )
-
-    if existing_sale:
-        print("A similar sale already exists. Skipping seeding this sale.")
-        session.close()
-        return
-
-    # Create Sale
-    sale = Sale(
-        customer_id=walk_in_customer.id,
-        total_amount=product.selling_price  # Assuming 1 quantity for simplicity
-    )
-    session.add(sale)
-    session.flush()  # Get generated ID
-
-    # Create SaleItem
-    sale_item = SaleItem(
-        sale_id=sale.id,
-        product_id=product.id,
-        name=product.name,
-        quantity=1,
-        price_at_sale=product.selling_price
-    )
-    session.add(sale_item)
-
-    # Commit changes
-    session.commit()
-    print(f"Seeded 1 sale with 1 item for customer '{walk_in_customer.name}'")
-
+    seed_categories(session)
+    seed_customers(session)
+    seed_products(session)
+    seed_sales_and_items(session, num_sales=15)
+    show_tables()
     session.close()
-
-
+    print("Seeding complete.")
 
 if __name__ == "__main__":
-    print("Creating tables if they don't exist...")
-    Base.metadata.create_all(engine)
-    seed_default_categories()  
-    seed_default_product()     
-    seed_default_customer()  
-    show_tables()      
-    seed_sales_and_sale_items()       
-    print("Seeding complete.")
+    run_seed()
