@@ -110,3 +110,40 @@ def update_category(db, category_id, name=None, description=None):
     db.commit()
     db.refresh(category)
     return category
+
+def delete_product(db, product_id):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise ValueError("Product not found")
+    
+    db.delete(product)
+    db.commit()
+    return product
+
+def get_or_create_category_by_name(db, name):
+    category = db.query(Category).filter(Category.name == name).first()
+    if category:
+        return category
+    # If not found, create it
+    new_category = Category(name=name)
+    db.add(new_category)
+    db.commit()
+    db.refresh(new_category)
+    return new_category
+
+def purchase_product(db, product_id, new_purchase_price, new_selling_price, quantity):
+    if quantity <= 0:
+        raise ValueError("Quantity must be greater than zero.")
+
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise ValueError("Product not found")
+
+    # Update the stock and pricing
+    product.stock += quantity
+    product.purchase_price = new_purchase_price
+    product.selling_price = new_selling_price
+
+    db.commit()
+    db.refresh(product)
+    return product

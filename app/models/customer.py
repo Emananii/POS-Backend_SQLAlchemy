@@ -29,3 +29,5 @@ class Customer(Base):
 
     def __repr__(self):
         return f"<Customer id={self.id}, name='{self.name}', email='{self.email}'>"
+    
+from app.models.sale import Sale  # Importing Sale after Customer to avoid circular import issues
