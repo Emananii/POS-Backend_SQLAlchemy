@@ -281,7 +281,7 @@ def inventory_menu():
 
 
 @click.command()
-def main_menu():
+def menu():
     """Main menu for inventory management."""
     while True:
         inventory_menu()
