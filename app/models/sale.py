@@ -21,7 +21,6 @@ class Sale(Base):
 
     customer = relationship("Customer", back_populates="sales")
 
-    # Relationship to SaleItem: one sale has many sale items
     items = relationship(
         "SaleItem",
         back_populates="sale",

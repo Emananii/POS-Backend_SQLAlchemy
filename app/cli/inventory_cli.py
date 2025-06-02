@@ -276,7 +276,7 @@ def inventory_menu():
     click.echo("7. List products by category")
     click.echo("8. View product stock levels")
     click.echo("9. Delete a product")
-    click.echo("10. Purchase stock")  # <---- Add this line
+    click.echo("10. Purchase stock")
     click.echo("11. Exit")
 
 
@@ -315,7 +315,7 @@ def menu():
         elif choice == 9:
             delete_product_cli()
         elif choice == 10:
-            purchase_stock_cli()  # Add purchase stock here
+            purchase_stock_cli()
         elif choice == 11:
             click.echo("Exiting the menu...")
             break

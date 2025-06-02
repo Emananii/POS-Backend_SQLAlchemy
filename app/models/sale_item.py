@@ -12,11 +12,9 @@ class SaleItem(Base):
     name = Column(String, nullable=False)
     quantity = Column(Integer, nullable=False)
     price_at_sale = Column(Float, nullable=False)
-
-    # Relationship back to Sale (many sale items belong to one sale)
+   
     sale = relationship("Sale", back_populates="items")
 
-    # Relationship to Product (optional but good to have)
     product = relationship("Product")
 
     def __repr__(self):

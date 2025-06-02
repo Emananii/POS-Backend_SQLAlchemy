@@ -24,7 +24,6 @@ class Product(Base):
         return f"<Product(name={self.name}, price={self.selling_price}, stock={self.stock})>"
 
     def to_dict(self):
-        # Return category name or None if no category linked
         return {
             "id": self.id,
             "name": self.name,
