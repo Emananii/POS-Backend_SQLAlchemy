@@ -16,6 +16,7 @@ from app.services.inventory_service import (
     purchase_product as purchase_stock  
 )
 from app.db.engine import SessionLocal
+from tabulate import tabulate
 
 
 def get_db():
@@ -125,14 +126,27 @@ def list_products():
     click.echo("\n--- All Products ---")
     db = next(get_db())
     products = get_all_products(db)
+
     if products:
+        table_data = []
+        headers = ["ID", "Name", "Brand", "Sell Price", "Stock", "Unit", "Category ID", "Barcode", "Image"]
+
         for product in products:
-            click.echo(f"ID: {product.id}, Name: {product.name}, Brand: {product.brand}, "
-                       f"Price: ${product.selling_price:.2f}, Stock: {product.stock} {product.unit}, "
-                       f"Category ID: {product.category_id}, Barcode: {product.barcode}")
+            table_data.append([
+                product.id,
+                product.name,
+                product.brand,
+                f"${product.selling_price:.2f}",
+                product.stock,
+                product.unit,
+                product.category_id,
+                product.barcode,
+                product.image if product.image else "-"
+            ])
+
+        click.echo(tabulate(table_data, headers=headers, tablefmt="fancy_grid"))
     else:
         click.echo("No products found in the inventory.")
-
 
 def purchase_stock_cli():
     """Purchase additional stock for an existing product."""
@@ -324,4 +338,4 @@ def menu():
 
 
 if __name__ == '__main__':
-    main_menu()
+    menu()

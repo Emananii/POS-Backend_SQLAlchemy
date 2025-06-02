@@ -11,7 +11,7 @@ def get_db():
         db.close()
 
 
-def create_product(db, name, brand, purchase_price, selling_price, stock, image, barcode, category_id, unit):
+def create_product(db, name, brand, purchase_price, selling_price, stock, barcode, category_id, unit):
 
     category = db.query(Category).filter(Category.id == category_id).first()
     if not category:
@@ -24,7 +24,6 @@ def create_product(db, name, brand, purchase_price, selling_price, stock, image,
         purchase_price=purchase_price,
         selling_price=selling_price,
         stock=stock,
-        image=image,
         barcode=barcode,
         category_id=category_id,
         unit=unit
