@@ -1,5 +1,5 @@
 from sqlalchemy import (
-    Column, String, Integer,
+    Column, String, Integer, Boolean,
     CheckConstraint, PrimaryKeyConstraint, UniqueConstraint, Index
 )
 from sqlalchemy.orm import relationship
@@ -24,6 +24,7 @@ class Customer(Base):
     company_name = Column(String(100), nullable=True)
     loyalty_points = Column(Integer, default=0)
     discount_rate = Column(Integer, default=0)  # Percentage discount
+    is_deleted = Column(Boolean, default=False, nullable=False)
 
     sales = relationship("Sale", back_populates="customer", cascade="all, delete-orphan")
 

@@ -38,7 +38,7 @@ def get_customer_by_name(db, name):
     return db.query(Customer).filter(Customer.name.ilike(f"%{name}%")).all()
 
 def get_all_customers(db):
-    return db.query(Customer).order_by(Customer.name).all()
+    return db.query(Customer).order_by(Customer.name).filter(Customer.is_deleted == False).all()
 
 def get_purchases_by_customer(db, customer_id: int):
         customer = db.query(Customer).filter(Customer.id == customer_id).first()
@@ -60,14 +60,17 @@ def update_customer(db, customer_id, **kwargs):
         return customer
 
 
-def delete_customer(db, customer_id):
-        customer = db.query(Customer).get(customer_id)
-        if not customer:
-            raise ValueError(f"Customer with ID {customer_id} not found.")
+def soft_delete_customer(db, customer_id):
+    customer = db.query(Customer).filter(Customer.id == customer_id).first()
+    if not customer:
+        raise ValueError(f"No customer with ID {customer_id}")
+    if customer.is_deleted:
+        raise ValueError(f"Customer with ID {customer_id} is already deleted")
+    
+    customer.is_deleted = True
+    db.commit()
+    return customer
 
-        db.delete(customer)
-        db.commit()
-        return True
 
 def add_loyalty_points(db, customer_id, points):
         customer = db.query(Customer).get(customer_id)

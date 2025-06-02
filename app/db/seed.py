@@ -28,20 +28,20 @@ CUSTOMERS = [
 
 PRODUCTS = [
     # Beverages
-    {"name": "Coca-Cola", "brand": "Coca-Cola", "price": 120, "category": "Beverages"},
-    {"name": "Pepsi", "brand": "PepsiCo", "price": 115, "category": "Beverages"},
+    {"name": "Coca-Cola", "brand": "Coca-Cola", "price": 120, "category": "Beverages", "unit": "ml"},
+    {"name": "Pepsi", "brand": "PepsiCo", "price": 115, "category": "Beverages", "unit": "ml"},
     # Grocery
-    {"name": "Maize Flour", "brand": "Unga", "price": 250, "category": "Grocery"},
-    {"name": "Rice", "brand": "Sunrice", "price": 300, "category": "Grocery"},
+    {"name": "Maize Flour", "brand": "Unga", "price": 250, "category": "Grocery", "unit": "kg"},
+    {"name": "Rice", "brand": "Sunrice", "price": 300, "category": "Grocery", "unit": "kg"},
     # Snacks
-    {"name": "Potato Chips", "brand": "Lays", "price": 80, "category": "Snacks"},
-    {"name": "Cookies", "brand": "Oreo", "price": 100, "category": "Snacks"},
+    {"name": "Potato Chips", "brand": "Lays", "price": 80, "category": "Snacks", "unit": "g"},
+    {"name": "Cookies", "brand": "Oreo", "price": 100, "category": "Snacks", "unit": "g"},
     # Frozen Foods
-    {"name": "Frozen Chicken", "brand": "FarmFresh", "price": 600, "category": "Frozen Foods"},
-    {"name": "Fish Fingers", "brand": "SeaFresh", "price": 550, "category": "Frozen Foods"},
+    {"name": "Frozen Chicken", "brand": "FarmFresh", "price": 600, "category": "Frozen Foods", "unit": "kg"},
+    {"name": "Fish Fingers", "brand": "SeaFresh", "price": 550, "category": "Frozen Foods", "unit": "pcs"},
     # Dairy
-    {"name": "Milk", "brand": "Brookside", "price": 60, "category": "Dairy"},
-    {"name": "Cheese", "brand": "HappyCow", "price": 200, "category": "Dairy"},
+    {"name": "Milk", "brand": "Brookside", "price": 60, "category": "Dairy", "unit": "L"},
+    {"name": "Cheese", "brand": "HappyCow", "price": 200, "category": "Dairy", "unit": "g"},
 ]
 
 def seed_categories(session):
@@ -60,12 +60,28 @@ def seed_customers(session):
 
 def seed_products(session):
     print("Seeding products...")
+
     for p in PRODUCTS:
         category = session.query(Category).filter_by(name=p["category"]).first()
         if not category:
+            print(f"Category '{p['category']}' not found. Skipping product '{p['name']}'.")
             continue
 
-        if not session.query(Product).filter_by(name=p["name"]).first():
+        existing_product = session.query(Product).filter_by(name=p["name"]).first()
+
+        if existing_product:
+            # Update existing product fields
+            existing_product.brand = p["brand"]
+            existing_product.purchase_price = p["price"] - 10
+            existing_product.selling_price = p["price"]
+            existing_product.stock = random.randint(30, 100)
+            existing_product.image = "https://source.unsplash.com/300x300/?product"
+            existing_product.barcode = str(random.randint(1000000000000, 9999999999999))
+            existing_product.category_id = category.id
+            existing_product.unit = p.get("unit", "undefined")
+            print(f"Updated product: {existing_product.name}")
+        else:
+            # Create and add new product
             product = Product(
                 name=p["name"],
                 brand=p["brand"],
@@ -75,9 +91,11 @@ def seed_products(session):
                 image="https://source.unsplash.com/300x300/?product",
                 barcode=str(random.randint(1000000000000, 9999999999999)),
                 category_id=category.id,
-                unit="pcs"
+                unit=p.get("unit", "undefined")
             )
             session.add(product)
+            print(f"Added new product: {product.name}")
+
     session.commit()
 
 def seed_sales_and_items(session, num_sales=10):
